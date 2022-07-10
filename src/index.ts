@@ -44,7 +44,9 @@ interface IMessage {
     connection_id: string;
     access_token: string;
     access_token_exp: number;
-    ping_interval_ms: number
+    ping_interval_ms: number;
+    is_error: boolean;
+    message: string;
 }
 
 class Memphis {
@@ -223,6 +225,22 @@ class Memphis {
         try {
             if (!this.isConnectionActive)
                 throw new Error("Connection is dead");
+
+            // this.client.write(JSON.stringify({
+            //     operation: 'createFactory',
+            //     input: {
+            //         factory_name: name,
+            //         description: description
+            //     }
+            // }));
+
+            // this.client.on('data', async data => {
+            //     let message: IMessage;
+            //     try {
+            //         message = JSON.parse(data.toString())
+            //     } catch (ex) {
+            //         throw ex
+            //     }})
 
             const response = await httpRequest({
                 method: "POST",
