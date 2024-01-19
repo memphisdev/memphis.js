@@ -56,6 +56,60 @@ import { Module } from '@nestjs/common';
 import { Memphis, MemphisModule, MemphisService } from 'memphis-dev';
 ```
 
+### Quickstart - Producing and Consuming
+
+The most basic functionaly of memphis is the ability to produce messages to a station and to consume those messages. 
+
+First, a connection to Memphis must be made:
+
+```js
+const { memphis } = require('memphis-dev');
+
+// Connecting to the broker
+memphis = Memphis()
+
+let conn = await memphis.connect({
+        host: "<memphis-host>",
+        username: "<memphis-username>", // (root/application type user)
+        accountId: <memphis-accountid/>, // You can find it on the profile page in the Memphis UI. This field should be sent only on the cloud version of Memphis, otherwise it will be ignored
+        password: "<memphis-password>"
+});
+```
+
+Then, to produce a message, call the `memphis.produce` function or create a producer and call its `producer.produce` function:
+
+```js
+await memphis.produce({
+        stationName:"<station-name>",
+        producerName:"<producer-name>",
+        message: {
+            "Hello": "World"
+        }
+});
+
+conn.close()
+```
+
+Lastly, to consume this message, call the `memphis.fetch_messages` function or create a consumer and call its `consumer.fetch` function:
+
+```js
+let messages = await memphis.fetchMessages({
+    stationName:"<station-name>",
+    consumerName:"<consumer-name>",
+});
+
+for (let message of messages){
+    const messageObject = JSON.parse(message.getData().toString());
+    // Do something with the message
+    console.log(messageObject["Hello"]);
+    message.ack()
+}
+
+conn.close()
+```
+
+> Note: Remember to close the connection or the process won't exit!
+
 ### Connecting to Memphis
 
 First, we need to connect with Memphis by using `memphis.connect`.

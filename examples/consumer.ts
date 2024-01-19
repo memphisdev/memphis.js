@@ -1,32 +1,36 @@
-import { memphis, Memphis, Message } from 'memphis-dev';
+import { memphis, Memphis } from 'memphis-dev';
 
 (async function () {
-    let memphisConnection: Memphis | null = null;
+    let memphisConnection: Memphis;
 
     try {
         memphisConnection = await memphis.connect({
-            host: '<memphis-host>',
-            username: '<application type username>',
-            password: 'password',
-            accountId: '<account-id>' // for cloud usage
+            host: "<memphis-host>",
+            username: "memphis-username", // (root/application type user)
+            accountId: <memphis-accountId />, //You can find it on the profile page in the Memphis UI. This field should be sent only on the cloud version of Memphis, otherwise it will be ignored
+            password: "<memphis-password>"
         });
 
-        const consumer = await memphisConnection.consumer({
-            stationName: '<station-name>',
-            consumerName: '<consumer-name>',
-            consumerGroup: ''
-        });
+        let consumer = await memphis.consumer({
+            stationName: "<station-name>",
+            consumerName: "<consumer-name>"
+        })
 
-        consumer.setContext({ key: "value" });
-        consumer.on('message', (message: Message, context: object) => {
-            console.log(message.getData().toString());
-            message.ack();
-            const headers = message.getHeaders()
-        });
+        while (true) {
+            let messages = consumer.fetch({})
 
-        consumer.on('error', (error) => {
-            console.log(error);
-        });
+            if (messages.length == 0) {
+                continue;
+            }
+
+            for (let message of messages) {
+                const messageObject = JSON.parse(message.getData().toString());
+                // Do something with the message
+                console.table(messageObject);
+                message.ack();
+            }
+
+        }
     } catch (ex) {
         console.log(ex);
         if (memphisConnection) memphisConnection.close();
